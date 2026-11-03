@@ -3,7 +3,7 @@
 \usepackage[T1]{fontenc}
 \usepackage[utf8]{inputenc}
 \usepackage[french]{babel}
-\usepackage[a4paper,margin=1.7cm,top=1.5cm]{geometry}
+\usepackage[a4paper,margin=1.7cm,top=1.5cm,bottom=1.4cm]{geometry}
 \usepackage{amsmath,amssymb}
 \usepackage{booktabs}
 \usepackage{enumitem}
@@ -55,13 +55,13 @@ directement de $i$ à $j$ ; $y_i\in\{0,1\}$ vaut 1 ssi l'aérodrome $i$ est visi
 & \textstyle\sum_{i\in V_k} y_i\ge 1 \qquad \forall k\in\{1,\dots,K\} \label{c:reg}
 \end{align}
 Les contraintes \eqref{c:flot} sont celles du modèle d'affectation, où le second
-membre 1 est remplacé par $y_k$. Elles traduisent aussi la relation logique « on ne peut
-utiliser un arc $(i,j)$ que si $i$ est visité » ($x_{ij}\le y_i$).
+membre 1 est remplacé par $y_k$. Elles impliquent aussi qu'un arc $(i,j)$ ne peut être utilisé
+que si $i$ est visité ($x_{ij}\le y_i$).
 La contrainte \eqref{c:reg} est une contrainte de couverture : chaque région
 doit être couverte au moins une fois. Comme pour le voyageur du commerce,
 \eqref{c:df}--\eqref{c:flot} n'empêchent pas les sous-tours : les arcs choisis forment
 un chemin $d\to f$ et, éventuellement, des circuits disjoints. Ces circuits permettent
-de « visiter » des aérodromes à bas coût pour satisfaire \eqref{c:amin}--\eqref{c:reg}.
+de compter des aérodromes comme visités à bas coût pour satisfaire \eqref{c:amin}--\eqref{c:reg}.
 Les deux formulations suivantes diffèrent uniquement par la manière de les interdire.
 
 \paragraph{Formulation 1 : modèle ayant un nombre polynomial de contraintes $(P_{pol})$.}
@@ -103,30 +103,32 @@ utilisons la forme coupe, plus simple à séparer. On s'attend enfin à ce que l
 formulation sous-tours soit meilleure que la formulation polynomiale, au sens où elle
 fournit une borne de qualité au moins aussi bonne. Nous le vérifions numériquement.
 
-\paragraph{Problème de séparation.} Le nombre de contraintes \eqref{c:cut} est de l'ordre
-de $n\,2^{n-1}$ : on les ajoute uniquement lorsqu'elles sont violées. Étant donné
-$(x^*,y^*)$ satisfaisant \eqref{c:df}--\eqref{c:reg}, il faut trouver
-$S\subseteq V\setminus\{d\}$ et $m\in S$ tels que $\sum_{\delta^-(S)}x^*_{ij}<y^*_m$,
-ou montrer qu'il n'en existe pas.
+\paragraph{Problème de séparation.} Les contraintes \eqref{c:cut} sont trop nombreuses
+(de l'ordre de $n\,2^{n-1}$) pour être toutes écrites. On résout donc le modèle sans elles,
+puis on ajoute seulement celles que la solution obtenue $(x^*,y^*)$ ne respecte pas.
+Le problème de séparation consiste à trouver une contrainte \eqref{c:cut} violée par
+$(x^*,y^*)$, ou à prouver qu'il n'y en a aucune.
 \begin{itemize}
-\item \emph{Cas fractionnaire.} On prend $x^*$ comme capacités. Pour $m$ fixé,
-$\min_{S\ni m,\ d\notin S}\sum_{\delta^-(S)}x^*_{ij}$ est la coupe minimale $d\to m$,
-égale au flot maximal de $d$ à $m$ (théorème flot max /
-coupe min). Pour chaque $m$ tel que $y^*_m>0$, on calcule ce flot (Edmonds--Karp). S'il
-est strictement inférieur à $y^*_m$, l'ensemble $S$ des sommets non atteignables depuis
-$d$ dans le graphe résiduel donne une contrainte violée. La séparation est donc exacte
-et polynomiale ($n$ calculs de flot).
-\item \emph{Cas entier.} Les arcs choisis forment un chemin et des circuits. On suit le
-chemin depuis $d$ ; chaque circuit $C$ non atteint donne les contraintes violées
-$(S=C,m)$ pour tout $m\in C$.
+\item \emph{Solution entière.} Les arcs choisis forment le chemin $d\to f$ et,
+éventuellement, des circuits isolés. On suit le chemin depuis $d$. Tout circuit $C$ qui
+n'est pas atteint viole \eqref{c:cut} avec $S=C$ : ses sommets sont visités, mais aucun
+arc n'entre dans $C$. On ajoute cette contrainte pour chaque $m\in C$.
+\item \emph{Solution fractionnaire} (utilisée pour la borne à la racine). On interprète
+$x^*_{ij}$ comme la capacité de l'arc $(i,j)$. Pour un sommet $m$ donné, la contrainte
+\eqref{c:cut} demande que tout ensemble $S$ contenant $m$ mais pas $d$ reçoive une
+capacité entrante d'au moins $y^*_m$. Or la plus petite capacité entrante possible est
+égale au flot maximal que l'on peut envoyer de $d$ vers $m$ (par dualité appliquée au PL
+de flot maximal). On calcule donc ce flot pour chaque $m$. S'il est inférieur à $y^*_m$,
+l'ensemble $S$ qui bloque le flot donne une contrainte violée. Sinon, aucune contrainte
+n'est violée pour ce $m$. La séparation se fait ainsi exactement, avec $n$ calculs de
+flot maximal.
 \end{itemize}
 
 \section{Mise en œuvre}
 
 Les modèles sont écrits en Julia avec JuMP et résolus avec SCIP, avec une limite de
-600\,s par instance et par formulation. SCIP.jl ne prend pas en charge les
-\emph{lazy callbacks} de JuMP (le code les utilise si l'on choisit Gurobi). Pour
-$(P_{coupe})$, nous résolvons donc une suite de PLNE : on résout le modèle avec les
+600\,s par instance et par formulation. Avec SCIP, JuMP ne permet pas d'ajouter
+des contraintes en cours de Branch-and-Cut. Pour $(P_{coupe})$, nous résolvons donc une suite de PLNE : on résout le modèle avec les
 contraintes \eqref{c:cut} déjà connues, on sépare les sous-tours de la solution entière,
 on ajoute les contraintes violées, puis on recommence. Chaque PLNE intermédiaire est une
 relaxation de $(P_{coupe})$, obtenue en optimisant sur un ensemble plus grand.
@@ -135,8 +137,9 @@ $(P_{coupe})$, donc optimale.
 
 La borne de relaxation continue à la racine $z_{LP}$ est une borne inférieure (duale) de
 l'optimum. Pour $(P_{pol})$, on résout directement le PL relâché. Pour $(P_{coupe})$, on
-applique un algorithme de plans coupants sur le PL relâché, avec la séparation
-fractionnaire exacte, jusqu'à ce qu'aucune contrainte ne soit violée. Les contraintes
+applique un algorithme de coupes : on résout le PL relâché, on sépare ses solutions par
+le cas fractionnaire, on ajoute les inégalités violées, et on recommence jusqu'à ce
+qu'aucune ne soit violée. Les contraintes
 trouvées sont conservées dans le premier PLNE, et le temps de cette phase est compté dans
 la limite de 600\,s. Chaque solution est vérifiée indépendamment. Sur
 l'instance d'exemple aerodrome\_0 (6 aérodromes), on retrouve l'optimum 12 avec le parcours
@@ -180,10 +183,8 @@ optimalité non prouvée : on a seulement l'encadrement $410.0\le z^*\le 481$.}
 \label{tab:res}
 \end{table}
 
-Lorsque $(P_{pol})$ atteint la limite de temps, on dispose seulement d'un encadrement
-entre la borne inférieure (duale) finale et la borne supérieure (primale) donnée par la
-meilleure solution admissible. Pour (80\_1, 90\_1, 100\_1, 100\_2, 120\_1,
-150\_1), on obtient respectivement : $[367.8 ; 385]$, $[545.0 ; 689]$, $[639.1 ; 690]$,
+Quand $(P_{pol})$ atteint la limite, on n'a qu'un encadrement [borne inférieure (duale) ;
+borne supérieure (primale)]. Pour 80\_1, 90\_1, 100\_1, 100\_2, 120\_1 et 150\_1 : $[367.8 ; 385]$, $[545.0 ; 689]$, $[639.1 ; 690]$,
 $[559.3 ; 611]$, $[388.7 ; 481]$ et $[437.1 ; 456]$.
 
 \section{Analyse}
@@ -197,8 +198,7 @@ solution optimale de la relaxation continue est déjà entière, donc optimale.
 L'écart de $(P_{pol})$, au contraire, ne diminue pas quand $n$ augmente et dépasse
 30\,\% sur la plupart des grandes instances. On l'explique par le majorant $M=n$ : avec
 $x_{ij}$ fractionnaire, la contrainte $u_j\ge u_i+1-n(1-x_{ij})$ n'est quasiment jamais
-active, et le polyèdre de la relaxation continue contient de nombreux points
-fractionnaires avec des sous-tours. Les contraintes \eqref{c:cut} imposent au contraire,
+active. Les contraintes \eqref{c:cut} imposent au contraire,
 même en fractionnaire, qu'un flot $y_m$ puisse être envoyé de $d$ vers chaque sommet $m$.
 
 \paragraph{Effort de résolution.} Pour $n\le 70$, les deux formulations résolvent les
@@ -207,20 +207,17 @@ instances en quelques secondes. $(P_{pol})$ peut toutefois demander beaucoup de 
 nœuds). À partir de $n=80$, $(P_{pol})$ ne ferme plus l'encadrement en 600\,s malgré
 plusieurs centaines de milliers de nœuds, et sa borne supérieure peut rester loin de
 l'optimum : 689 contre 605 pour 90\_1, soit 14\,\% de plus. $(P_{coupe})$ résout ces
-instances en 30\,s à 5\,min. Le temps est presque entièrement consacré aux plans coupants
-de la racine : c'est le prix d'une bonne relaxation.
+instances en 30\,s à 5\,min. Le temps est presque entièrement consacré à l'algorithme de
+coupes de la racine : c'est le prix d'une bonne relaxation.
 
-\paragraph{Limites.} Le coût de la racine croît avec le nombre d'arcs. Sur 120\_1
-($R=90$, donc 5473 arcs, graphe presque complet), les plans coupants épuisent à eux seuls
+\paragraph{Limites.} Sur 120\_1
+($R=90$, donc 5473 arcs, graphe presque complet), les coupes de la racine épuisent à elles seules
 la limite de temps, et aucune solution admissible n'est obtenue avec $(P_{coupe})$. Sa
 borne inférieure (410.0) reste néanmoins meilleure que celle de $(P_{pol})$ après 600\,s
 (388.7). Deux améliorations simples seraient de limiter le temps passé à la racine, ou
-d'utiliser un solveur qui accepte les \emph{lazy callbacks} (Gurobi) pour séparer les
-contraintes pendant le Branch-and-Cut (option prévue dans le code).
+de séparer les inégalités à chaque nœud du Branch-and-Cut.
 
-\paragraph{Conclusion.} Le modèle polynomial est simple, mais sa relaxation continue faible
-l'empêche de résoudre les instances au-delà de 70 aérodromes. Le modèle d'élimination de
-sous-tours, avec une séparation exacte par flot maximal, est une bien meilleure
-formulation : il résout 14 instances sur 15 à l'optimalité, contre 9.
+\paragraph{Conclusion.} Le modèle d'élimination de sous-tours, avec une séparation exacte
+par flot maximal, est la meilleure formulation : il résout 14 instances sur 15, contre 9.
 
 \end{document}

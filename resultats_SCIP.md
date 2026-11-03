@@ -1,4 +1,4 @@
-| Instance | Formulation | Statut | Meilleure solution | Borne inf. finale | Borne LP racine | Gap LP (%) | Temps (s) | Nœuds | Coupes lazy | Aérodromes |
+| Instance | Formulation | Statut | Meilleure solution | Borne inf. finale | Borne LP racine | Gap LP (%) | Temps (s) | Nœuds | Coupes ajoutées | Aérodromes |
 |---|---|---|---|---|---|---|---|---|---|---|
 | aerodrome_0.txt | MTZ | OPTIMAL | 12.0 | 12.0 | 8.0 | 33.3 | 0.0 | 1 | 0 | 4 |
 | aerodrome_0.txt | CUT | OPTIMAL | 12.0 | 12.0 | 10.0 | 16.7 | 0.27 | 1 | 0 | 4 |

@@ -15,11 +15,9 @@ Lancer :
 ```bash
 julia course_avions.jl                                   # toutes les instances
 julia course_avions.jl instances/aerodrome_0.txt         # une instance
-SOLVER=Gurobi julia course_avions.jl                     # avec Gurobi (si installé)
 ```
 
-Par défaut le script utilise **SCIP** (gratuit, déjà installé). Avec `SOLVER=Gurobi`
-il utilise Gurobi, comme demandé dans le complément du sujet.
+Le script utilise le solveur **SCIP**.
 
 ---
 
@@ -169,10 +167,8 @@ ajoute pour tous les $m \in C$). Dans le code : `separate_integer`.
 
 ### Mise en œuvre
 
-- **Avec Gurobi** : la séparation entière est appelée dans un *lazy constraint
-  callback* (`MOI.LazyConstraintCallback`) ; on obtient un vrai Branch-and-Cut,
-  en une seule résolution.
-- **Avec SCIP** : SCIP.jl ne gère pas les lazy callbacks de JuMP. On fait donc la
+- Avec SCIP, JuMP ne permet pas d'ajouter des contraintes en cours de
+  Branch-and-Cut. On fait donc la
   boucle classique de génération de contraintes : résoudre le PLNE → chercher les
   sous-tours → ajouter les coupes → recommencer jusqu'à ce qu'il n'y ait plus de
   sous-tour. La solution obtenue est alors optimale pour le modèle complet (elle est

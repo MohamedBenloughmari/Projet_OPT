@@ -4,24 +4,16 @@
 # Deux formulations PLNE inspirées du TSP orienté :
 #   1) MTZ  : nombre polynomial de contraintes (Miller-Tucker-Zemlin)
 #   2) CUT  : nombre exponentiel de contraintes de connexité,
-#             ajoutées à la volée (lazy constraints) => Branch-and-Cut
+#             ajoutées au fur et à mesure (séparation)
 #
 # Utilisation :
 #   julia course_avions.jl                          -> toutes les instances
 #   julia course_avions.jl instances/aerodrome_20_1.txt
-#   SOLVER=Gurobi julia course_avions.jl            -> avec Gurobi
 # =====================================================================
 
 using JuMP
-const SOLVER = get(ENV, "SOLVER", "SCIP")
-if SOLVER == "Gurobi"
-    using Gurobi
-    const GRB_ENV = Gurobi.Env()
-    new_model() = Model(() -> Gurobi.Optimizer(GRB_ENV))
-else
-    using SCIP
-    new_model() = Model(SCIP.Optimizer)
-end
+using SCIP
+new_model() = Model(SCIP.Optimizer)
 
 include("lecture_distances.jl")
 
@@ -204,47 +196,22 @@ end
 
 function model_cut(n, d, f, Amin, Nr, regions, D, A, root_cuts)
     m = base_model(n, d, f, Amin, Nr, regions, D, A)
-    x, y = m[:x], m[:y]
+    y = m[:y]
     # on part des coupes trouvées à la racine par la séparation fractionnaire
     for (S, k) in root_cuts
         @constraint(m, cut_expr(m, A, S) >= y[k])
     end
     m.ext[:ncuts] = 0
-    SOLVER == "Gurobi" || return m
-
-    # Gurobi : callback "lazy" appelé sur chaque solution entière candidate
-    function lazy_cb(cb_data)
-        xv = Dict(a => callback_value(cb_data, x[a]) for a in A)
-        # on ne traite que les solutions entières
-        any(v -> 0.01 < v < 0.99, values(xv)) && return
-        for S in separate_integer(n, d, A, xv)
-            e = cut_expr(m, A, S)
-            for k in S
-                con = @build_constraint(e >= y[k])
-                MOI.submit(m, MOI.LazyConstraint(cb_data), con)
-                m.ext[:ncuts] += 1
-            end
-        end
-    end
-    set_attribute(m, MOI.LazyConstraintCallback(), lazy_cb)
     return m
 end
 
-# Résolution de la formulation exponentielle.
-#  - Gurobi : un seul Branch-and-Cut (coupes ajoutées par le callback)
-#  - SCIP   : SCIP.jl ne gère pas les lazy callbacks de JuMP, on fait donc
-#             de la génération de contraintes "à l'extérieur" : on résout,
-#             on cherche les sous-tours, on ajoute les coupes, on recommence.
+# Résolution de la formulation exponentielle : on résout, on cherche les
+# sous-tours, on ajoute les coupes violées, on recommence.
 # Si la limite de temps arrive avant d'avoir une solution sans sous-tour,
 # la dernière solution n'est pas réalisable : le programme appelant la rejette
 # grâce à check_solution (seule la borne inférieure reste valable).
 # Renvoie (temps total, nombre total de nœuds, nombre d'itérations)
 function solve_cut!(m, n, d, A, time_budget)
-    set_time_limit_sec(m, max(1.0, time_budget))
-    if SOLVER == "Gurobi"
-        optimize!(m)
-        return solve_time(m), node_count(m), 1
-    end
     x, y = m[:x], m[:y]
     t, nodes, it = 0.0, 0, 0
     while true
@@ -386,7 +353,7 @@ end
 
 function write_table(results, out)
     open(out, "w") do io
-        println(io, "| Instance | Formulation | Statut | Meilleure solution | Borne inf. finale | Borne LP racine | Gap LP (%) | Temps (s) | Nœuds | Coupes lazy | Aérodromes |")
+        println(io, "| Instance | Formulation | Statut | Meilleure solution | Borne inf. finale | Borne LP racine | Gap LP (%) | Temps (s) | Nœuds | Coupes ajoutées | Aérodromes |")
         println(io, "|---|---|---|---|---|---|---|---|---|---|---|")
         for r in results
             gap = isnan(r.obj) || isnan(r.lp) ? NaN : 100 * (r.obj - r.lp) / r.obj
@@ -412,7 +379,7 @@ function main(args)
     for file in files
         append!(all_results, solve_instance(file))
     end
-    write_table(all_results, joinpath(@__DIR__, "resultats_$(SOLVER).md"))
+    write_table(all_results, joinpath(@__DIR__, "resultats_SCIP.md"))
 end
 
 if abspath(PROGRAM_FILE) == @__FILE__
