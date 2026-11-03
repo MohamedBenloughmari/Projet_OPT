@@ -1,82 +1,42 @@
-# =====================================================================
-# 5OD21 - Optimisation Discrète - Projet "Course d'avions"
-#
-# Deux formulations PLNE inspirées du TSP orienté :
-#   1) MTZ  : nombre polynomial de contraintes (Miller-Tucker-Zemlin)
-#   2) CUT  : nombre exponentiel de contraintes de connexité,
-#             ajoutées au fur et à mesure (séparation)
-#
-# Utilisation :
-#   julia course_avions.jl                          -> toutes les instances
-#   julia course_avions.jl instances/aerodrome_20_1.txt
-# =====================================================================
+# Projet 5OD21 - Course d'avions
+# Formulation 1 : polynomiale (variables u)
+# Formulation 2 : coupes, ajoutées par séparation
 
-using JuMP
-using SCIP
-new_model() = Model(SCIP.Optimizer)
-
+using JuMP, SCIP
 include("lecture_distances.jl")
 
-const TIME_LIMIT = 600.0   # secondes par résolution
-const EPS = 1e-6
+const TMAX = 600.0   # limite de temps par formulation (s)
 
-# ---------------------------------------------------------------------
-# Graphe : on garde uniquement les arcs (i,j) réalisables
-#   - D[i,j] <= R (rayon d'action)
-#   - pas d'arc entrant dans le départ d, pas d'arc sortant de l'arrivée f
-# ---------------------------------------------------------------------
-function build_arcs(n, d, f, R, D)
-    return [(i, j) for i in 1:n for j in 1:n
-            if i != j && D[i, j] <= R && j != d && i != f]
-end
-
-# ---------------------------------------------------------------------
-# Partie commune aux deux formulations :
-#   x[i,j] = 1 si l'avion vole directement de i à j
-#   y[i]   = 1 si l'aérodrome i est visité
-# ---------------------------------------------------------------------
-function base_model(n, d, f, Amin, Nr, regions, D, A)
-    m = new_model()
+# contraintes communes aux deux formulations
+function modele_commun(n, d, f, Amin, Nr, regions, D, A)
+    m = Model(SCIP.Optimizer)
     set_silent(m)
-    set_time_limit_sec(m, TIME_LIMIT)
+    set_time_limit_sec(m, TMAX)
 
-    @variable(m, x[A], Bin)
-    @variable(m, y[1:n], Bin)
-
-    out_arcs = [[(i, j) for (i, j) in A if i == k] for k in 1:n]
-    in_arcs  = [[(i, j) for (i, j) in A if j == k] for k in 1:n]
+    @variable(m, x[A], Bin)      # x[(i,j)] = 1 si on vole de i a j
+    @variable(m, y[1:n], Bin)    # y[i] = 1 si on passe par i
 
     @objective(m, Min, sum(D[i, j] * x[(i, j)] for (i, j) in A))
 
-    # départ et arrivée
-    @constraint(m, sum(x[a] for a in out_arcs[d]) == 1)
-    @constraint(m, sum(x[a] for a in in_arcs[f]) == 1)
+    @constraint(m, sum(x[(i, j)] for (i, j) in A if i == d) == 1)
+    @constraint(m, sum(x[(i, j)] for (i, j) in A if j == f) == 1)
     @constraint(m, y[d] == 1)
     @constraint(m, y[f] == 1)
-
-    # conservation du flot : on entre et on sort une fois de chaque aérodrome visité
     for k in 1:n
-        k in (d, f) && continue
-        @constraint(m, sum(x[a] for a in in_arcs[k]) == y[k])
-        @constraint(m, sum(x[a] for a in out_arcs[k]) == y[k])
+        if k != d && k != f
+            @constraint(m, sum(x[(i, j)] for (i, j) in A if j == k) == y[k])
+            @constraint(m, sum(x[(i, j)] for (i, j) in A if i == k) == y[k])
+        end
     end
-
-    # nombre minimal d'aérodromes visités
     @constraint(m, sum(y) >= Amin)
-
-    # chaque région visitée au moins une fois
     for k in 1:Nr
         @constraint(m, sum(y[i] for i in regions[k]) >= 1)
     end
     return m
 end
 
-# =====================================================================
-# Formulation 1 : MTZ (polynomiale)
-#   u[i] = position de i dans le chemin ; x[i,j] = 1  =>  u[j] >= u[i] + 1
-# =====================================================================
-function model_mtz(n, d, f, Amin, Nr, regions, D, A)
-    m = base_model(n, d, f, Amin, Nr, regions, D, A)
+function modele_polynomial(n, d, f, Amin, Nr, regions, D, A)
+    m = modele_commun(n, d, f, Amin, Nr, regions, D, A)
     x = m[:x]
     @variable(m, 1 <= u[1:n] <= n)
     @constraint(m, u[d] == 1)
@@ -86,302 +46,200 @@ function model_mtz(n, d, f, Amin, Nr, regions, D, A)
     return m
 end
 
-# =====================================================================
-# Formulation 2 : coupes de connexité (exponentielle)
-#   Pour tout S ⊆ V \ {d} et tout m ∈ S :
-#       sum_{i ∉ S, j ∈ S} x[i,j] >= y[m]
-#   ("si on visite m, au moins un arc doit entrer dans S")
-# =====================================================================
-
-# Ajoute (ou renvoie) les coupes pour un ensemble S
-function cut_expr(m, A, S)
-    x, y = m[:x], m[:y]
-    inS = falses(size(y, 1))
-    inS[S] .= true
-    return sum(x[(i, j)] for (i, j) in A if !inS[i] && inS[j]; init = AffExpr(0.0))
+# somme des x sur les arcs qui entrent dans S
+function entrant(m, A, S)
+    dansS = falses(length(m[:y]))
+    dansS[S] .= true
+    return sum(m[:x][(i, j)] for (i, j) in A if !dansS[i] && dansS[j]; init = AffExpr(0))
 end
 
-# ---- Séparation entière : composantes non reliées au départ ---------
-# xv[(i,j)] ∈ {0,1}. On parcourt le chemin depuis d ; les aérodromes
-# visités qui ne sont pas atteints forment des sous-tours.
-function separate_integer(n, d, A, xv)
-    succ = zeros(Int, n)
+# solution entiere : on suit le chemin depuis d, ce qui reste forme des sous-tours
+function sous_tours(n, d, A, xv)
+    suiv = zeros(Int, n)
     for (i, j) in A
-        xv[(i, j)] > 0.5 && (succ[i] = j)
-    end
-    reached = falses(n)
-    k = d
-    while k != 0 && !reached[k]
-        reached[k] = true
-        k = succ[k]
-    end
-    subtours = Vector{Vector{Int}}()
-    seen = copy(reached)
-    for s in 1:n
-        (seen[s] || succ[s] == 0) && continue
-        cyc = Int[]
-        k = s
-        while !seen[k]
-            seen[k] = true
-            push!(cyc, k)
-            k = succ[k]
+        if xv[(i, j)] > 0.5
+            suiv[i] = j
         end
-        push!(subtours, cyc)
     end
-    return subtours
+    vu = falses(n)
+    k = d
+    while k != 0 && !vu[k]
+        vu[k] = true
+        k = suiv[k]
+    end
+    tours = Vector{Int}[]
+    for s in 1:n
+        if !vu[s] && suiv[s] != 0
+            c = Int[]
+            k = s
+            while !vu[k]
+                vu[k] = true
+                push!(c, k)
+                k = suiv[k]
+            end
+            push!(tours, c)
+        end
+    end
+    return tours
 end
 
-# ---- Séparation fractionnaire : coupe minimale d -> m ----------------
-# Max-flot d'Edmonds-Karp sur la matrice des capacités cap = x*.
-# Renvoie (valeur du flot, ensemble S côté puits de la coupe min).
-function min_cut(cap::Matrix{Float64}, s::Int, t::Int)
-    n = size(cap, 1)
-    res = copy(cap)
-    flow = 0.0
+# flot max de s vers t (chemins augmentants)
+# renvoie la valeur du flot et les sommets du cote de t dans la coupe min
+function flot_max(c, s, t)
+    n = size(c, 1)
+    c = copy(c)
+    val = 0.0
     while true
-        parent = zeros(Int, n)
-        parent[s] = s
-        queue = [s]
-        while !isempty(queue) && parent[t] == 0
-            u = popfirst!(queue)
+        pred = zeros(Int, n)
+        pred[s] = s
+        file = [s]
+        while !isempty(file)
+            u = popfirst!(file)
             for v in 1:n
-                if parent[v] == 0 && res[u, v] > EPS
-                    parent[v] = u
-                    push!(queue, v)
+                if pred[v] == 0 && c[u, v] > 1e-6
+                    pred[v] = u
+                    push!(file, v)
                 end
             end
         end
-        parent[t] == 0 && break
-        # capacité résiduelle du chemin augmentant
+        if pred[t] == 0
+            return val, findall(pred .== 0)
+        end
         b = Inf
         v = t
         while v != s
-            b = min(b, res[parent[v], v]); v = parent[v]
+            b = min(b, c[pred[v], v])
+            v = pred[v]
         end
         v = t
         while v != s
-            u = parent[v]
-            res[u, v] -= b; res[v, u] += b; v = u
+            c[pred[v], v] -= b
+            c[v, pred[v]] += b
+            v = pred[v]
         end
-        flow += b
+        val += b
     end
-    # S = sommets non atteignables depuis s dans le graphe résiduel
-    reach = falses(n); reach[s] = true
-    queue = [s]
-    while !isempty(queue)
-        u = popfirst!(queue)
-        for v in 1:n
-            if !reach[v] && res[u, v] > EPS
-                reach[v] = true; push!(queue, v)
-            end
-        end
-    end
-    return flow, findall(.!reach)
 end
 
-# Pour chaque m avec y*[m] > 0 : si mincut(d,m) < y*[m], la coupe est violée
-function separate_fractional(n, d, A, xv, yv)
-    cap = zeros(n, n)
+# solution fractionnaire : pour chaque m, flot max de d vers m avec capacites x
+function separation_fractionnaire(n, d, A, x, y)
+    c = zeros(n, n)
     for (i, j) in A
-        cap[i, j] = xv[(i, j)]
+        c[i, j] = value(x[(i, j)])
     end
-    cuts = Tuple{Vector{Int},Int}[]
+    coupes = []
     for k in 1:n
-        (k == d || yv[k] < EPS) && continue
-        val, S = min_cut(cap, d, k)
-        val < yv[k] - 1e-4 && push!(cuts, (S, k))
-    end
-    return cuts
-end
-
-function model_cut(n, d, f, Amin, Nr, regions, D, A, root_cuts)
-    m = base_model(n, d, f, Amin, Nr, regions, D, A)
-    y = m[:y]
-    # on part des coupes trouvées à la racine par la séparation fractionnaire
-    for (S, k) in root_cuts
-        @constraint(m, cut_expr(m, A, S) >= y[k])
-    end
-    m.ext[:ncuts] = 0
-    return m
-end
-
-# Résolution de la formulation exponentielle : on résout, on cherche les
-# sous-tours, on ajoute les coupes violées, on recommence.
-# Si la limite de temps arrive avant d'avoir une solution sans sous-tour,
-# la dernière solution n'est pas réalisable : le programme appelant la rejette
-# grâce à check_solution (seule la borne inférieure reste valable).
-# Renvoie (temps total, nombre total de nœuds, nombre d'itérations)
-function solve_cut!(m, n, d, A, time_budget)
-    x, y = m[:x], m[:y]
-    t, nodes, it = 0.0, 0, 0
-    while true
-        set_time_limit_sec(m, max(1.0, time_budget - t))
-        optimize!(m)
-        t += solve_time(m); nodes += node_count(m); it += 1
-        primal_status(m) == FEASIBLE_POINT || return t, nodes, it
-        termination_status(m) == OPTIMAL || return t, nodes, it
-        t >= time_budget && return t, nodes, it
-        xv = Dict(a => value(x[a]) for a in A)
-        subtours = separate_integer(n, d, A, xv)
-        isempty(subtours) && return t, nodes, it
-        for S in subtours
-            e = cut_expr(m, A, S)
-            for k in S
-                @constraint(m, e >= y[k])
-                m.ext[:ncuts] += 1
+        if k != d && value(y[k]) > 1e-6
+            v, S = flot_max(c, d, k)
+            if v < value(y[k]) - 1e-4
+                push!(coupes, (S, k))
             end
         end
     end
+    return coupes
 end
 
-# ---------------------------------------------------------------------
-# Bornes de relaxation continue (à la racine)
-# ---------------------------------------------------------------------
-function lp_bound_mtz(n, d, f, Amin, Nr, regions, D, A)
-    m = model_mtz(n, d, f, Amin, Nr, regions, D, A)
-    relax_integrality(m)
-    optimize!(m)
-    return is_solved_and_feasible(m) ? objective_value(m) : NaN
-end
+function resoudre_coupes(n, d, f, Amin, Nr, regions, D, A)
+    t0 = time()
 
-# Pour la formulation exponentielle : algorithme de plans coupants sur la
-# relaxation continue, avec séparation exacte par coupe minimale.
-# Renvoie (borne, coupes ajoutées, nombre d'itérations). Si un PL échoue, on
-# garde la dernière borne obtenue (valide mais un peu plus faible).
-function lp_bound_cut(n, d, f, Amin, Nr, regions, D, A)
-    m = base_model(n, d, f, Amin, Nr, regions, D, A)
-    relax_integrality(m)
-    x, y = m[:x], m[:y]
-    all_cuts = Tuple{Vector{Int},Int}[]
-    bound, it = NaN, 0
+    # 1) relaxation continue + coupes => borne a la racine
+    r = modele_commun(n, d, f, Amin, Nr, regions, D, A)
+    relax_integrality(r)
+    lp = NaN
+    toutes = []
     while true
+        optimize!(r)
+        if !is_solved_and_feasible(r)
+            break
+        end
+        lp = objective_value(r)
+        coupes = separation_fractionnaire(n, d, A, r[:x], r[:y])
+        if isempty(coupes)
+            break
+        end
+        for (S, k) in coupes
+            @constraint(r, entrant(r, A, S) >= r[:y][k])
+        end
+        append!(toutes, coupes)
+    end
+
+    # 2) PLNE en gardant ces coupes, on ajoute les sous-tours tant qu'il y en a
+    m = modele_commun(n, d, f, Amin, Nr, regions, D, A)
+    x, y = m[:x], m[:y]
+    for (S, k) in toutes
+        @constraint(m, entrant(m, A, S) >= y[k])
+    end
+    noeuds = 0
+    while true
+        set_time_limit_sec(m, max(1.0, TMAX - (time() - t0)))
         optimize!(m)
-        if !is_solved_and_feasible(m)
-            @warn "PL de la racine non résolu (statut $(termination_status(m))), dernière borne gardée"
-            return bound, all_cuts, it
+        noeuds += MOI.get(m, MOI.NodeCount())
+        if termination_status(m) != OPTIMAL || time() - t0 >= TMAX
+            break
         end
-        bound = objective_value(m)
         xv = Dict(a => value(x[a]) for a in A)
-        yv = value.(y)
-        cuts = separate_fractional(n, d, A, xv, yv)
-        isempty(cuts) && return bound, all_cuts, it
-        for (S, k) in cuts
-            @constraint(m, cut_expr(m, A, S) >= y[k])
+        tours = sous_tours(n, d, A, xv)
+        if isempty(tours)
+            break
         end
-        append!(all_cuts, cuts)
-        it += 1
+        for c in tours, k in c
+            @constraint(m, entrant(m, A, c) >= y[k])
+        end
     end
+    return m, lp, time() - t0, noeuds
 end
 
-# ---------------------------------------------------------------------
-# Lecture de la solution : chemin d -> f
-# ---------------------------------------------------------------------
-function extract_path(n, d, f, A, x)
-    succ = zeros(Int, n)
+function chemin(n, d, f, A, x)
+    suiv = zeros(Int, n)
     for (i, j) in A
-        value(x[(i, j)]) > 0.5 && (succ[i] = j)
-    end
-    path = [d]
-    while path[end] != f && succ[path[end]] != 0 && length(path) <= n
-        push!(path, succ[path[end]])
-    end
-    return path
-end
-
-function check_solution(path, d, f, Amin, Nr, regions, R, D)
-    ok = path[1] == d && path[end] == f && allunique(path)
-    ok &= length(path) >= Amin
-    ok &= all(D[path[k], path[k+1]] <= R for k in 1:length(path)-1)
-    ok &= all(any(i in path for i in regions[k]) for k in 1:Nr)
-    return ok
-end
-
-function node_count(m)
-    try
-        return MOI.get(m, MOI.NodeCount())
-    catch
-        return -1
-    end
-end
-
-# ---------------------------------------------------------------------
-# Résolution d'une instance avec les deux formulations
-# ---------------------------------------------------------------------
-function solve_instance(file)
-    n, d, f, Amin, Nr, R, regions, coords, D = readInstance(file)
-    A = build_arcs(n, d, f, R, D)
-    name = basename(file)
-    println("\n=== $name : n=$n, d=$d, f=$f, Amin=$Amin, K=$Nr, R=$R, |A|=$(length(A))")
-
-    results = []
-    for form in (:MTZ, :CUT)
-        if form == :MTZ
-            lp = lp_bound_mtz(n, d, f, Amin, Nr, regions, D, A)
-            m = model_mtz(n, d, f, Amin, Nr, regions, D, A)
-            optimize!(m)
-            t, nodes = solve_time(m), node_count(m)
-        else
-            # le temps de la racine (plans coupants) compte dans le budget
-            t_root = @elapsed lp, root_cuts, _ = lp_bound_cut(n, d, f, Amin, Nr, regions, D, A)
-            m = model_cut(n, d, f, Amin, Nr, regions, D, A, root_cuts)
-            t, nodes, _ = solve_cut!(m, n, d, A, TIME_LIMIT - t_root)
-            t += t_root
-        end
-        st = termination_status(m)
-        bound = try objective_bound(m) catch; NaN end
-        if primal_status(m) == FEASIBLE_POINT
-            path = extract_path(n, d, f, A, m[:x])
-            ok = check_solution(path, d, f, Amin, Nr, regions, R, D)
-        else
-            path, ok = Int[], false
-        end
-        # une solution qui ne passe pas la vérification n'est pas réalisable
-        obj = ok ? objective_value(m) : NaN
-        ok || (path = Int[])
-        ncuts = form == :CUT ? m.ext[:ncuts] : 0
-        println("  [$form] statut=$st  obj=$obj  borne_inf=$(round(bound, digits=2))  " *
-                "borneLP=$(round(lp, digits=2))  temps=$(round(t, digits=2))s  " *
-                "noeuds=$nodes  coupes=$ncuts  valide=$ok")
-        println("        chemin ($(length(path)) aérodromes) : ", join(path, " -> "))
-        flush(stdout)
-        push!(results, (instance = name, form = form, status = st, obj = obj,
-                        bound = bound, lp = lp, time = t, nodes = nodes,
-                        ncuts = ncuts, nvisit = length(path), valid = ok))
-    end
-    return results
-end
-
-function write_table(results, out)
-    open(out, "w") do io
-        println(io, "| Instance | Formulation | Statut | Meilleure solution | Borne inf. finale | Borne LP racine | Gap LP (%) | Temps (s) | Nœuds | Coupes ajoutées | Aérodromes |")
-        println(io, "|---|---|---|---|---|---|---|---|---|---|---|")
-        for r in results
-            gap = isnan(r.obj) || isnan(r.lp) ? NaN : 100 * (r.obj - r.lp) / r.obj
-            println(io, "| $(r.instance) | $(r.form) | $(r.status) | $(r.obj) | ",
-                    "$(round(r.bound, digits=2)) | $(round(r.lp, digits=2)) | $(round(gap, digits=1)) | ",
-                    "$(round(r.time, digits=2)) | $(r.nodes) | $(r.ncuts) | $(r.nvisit) |")
+        if value(x[(i, j)]) > 0.5
+            suiv[i] = j
         end
     end
-    println("\nTableau écrit dans $out")
+    p = [d]
+    while p[end] != f && suiv[p[end]] != 0 && length(p) <= n
+        push!(p, suiv[p[end]])
+    end
+    return p
 end
 
-# ---------------------------------------------------------------------
-function main(args)
-    dir = joinpath(@__DIR__, "instances")
-    files = if isempty(args)
-        # tri par taille : aerodrome_20_1.txt -> 20
-        size_of(f) = (parse(Int, replace(split(f, "_")[2], ".txt" => "")), f)
-        joinpath.(dir, sort(filter(endswith(".txt"), readdir(dir)), by = size_of))
-    else
-        args
+function afficher(nom, m, lp, t, noeuds, n, d, f, A, Amin, Nr, regions)
+    p = primal_status(m) == FEASIBLE_POINT ? chemin(n, d, f, A, m[:x]) : Int[]
+    ok = !isempty(p) && p[end] == f && allunique(p) && length(p) >= Amin &&
+         all(any(i in p for i in regions[k]) for k in 1:Nr)
+    z = ok ? objective_value(m) : NaN
+    binf = objective_bound(m)
+    ecart = 100 * (z - lp) / z
+    println("  $nom : ", termination_status(m), "  z = $z  borne inf = ", round(binf, digits = 2),
+            "  borne LP = ", round(lp, digits = 2), "  ecart = ", round(ecart, digits = 1), "%",
+            "  temps = ", round(t, digits = 2), "s  noeuds = $noeuds")
+    if ok
+        println("      chemin (", length(p), ") : ", join(p, " "))
     end
-    all_results = []
-    for file in files
-        append!(all_results, solve_instance(file))
-    end
-    write_table(all_results, joinpath(@__DIR__, "resultats_SCIP.md"))
 end
 
-if abspath(PROGRAM_FILE) == @__FILE__
-    main(ARGS)
+instances = ["aerodrome_0", "aerodrome_20_1", "aerodrome_20_2", "aerodrome_20_3",
+             "aerodrome_20_4", "aerodrome_30_1", "aerodrome_40_1", "aerodrome_50_1",
+             "aerodrome_70_1", "aerodrome_80_1", "aerodrome_90_1", "aerodrome_100_1",
+             "aerodrome_100_2", "aerodrome_120_1", "aerodrome_150_1"]
+fichiers = isempty(ARGS) ? ["instances/$nom.txt" for nom in instances] : ARGS
+
+for fic in fichiers
+    n, d, f, Amin, Nr, R, regions, coords, D = readInstance(fic)
+    # on enleve les arcs trop longs, ceux qui arrivent en d et ceux qui partent de f
+    A = [(i, j) for i in 1:n for j in 1:n if i != j && D[i, j] <= R && j != d && i != f]
+    println("\n", fic, " : n = $n, |A| = ", length(A))
+
+    r = modele_polynomial(n, d, f, Amin, Nr, regions, D, A)
+    relax_integrality(r)
+    optimize!(r)
+    lp = objective_value(r)
+
+    m = modele_polynomial(n, d, f, Amin, Nr, regions, D, A)
+    optimize!(m)
+    afficher("polynomiale", m, lp, solve_time(m), MOI.get(m, MOI.NodeCount()),
+             n, d, f, A, Amin, Nr, regions)
+
+    m, lp, t, noeuds = resoudre_coupes(n, d, f, Amin, Nr, regions, D, A)
+    afficher("coupes", m, lp, t, noeuds, n, d, f, A, Amin, Nr, regions)
 end

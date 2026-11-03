@@ -5,8 +5,8 @@ Fichiers :
 | Fichier | Rôle |
 |---|---|
 | `lecture_distances.jl` | lecture d'une instance (fourni) |
-| `course_avions.jl` | les deux formulations PLNE, les bornes LP, la résolution et le tableau de résultats |
-| `resultats_SCIP.md`, `run_all.log` | résultats générés par le script |
+| `course_avions.jl` | les deux formulations PLNE, les bornes LP et la résolution (résultats affichés dans le terminal) |
+| `resultats_SCIP.md`, `run_all.log` | résultats des exécutions |
 | `rapport/` | rapport LaTeX (3 pages) |
 | `instances/` | instances fournies |
 
@@ -158,12 +158,12 @@ pour chaque m ≠ d avec y*_m > 0 :
 ```
 
 Cela coûte au plus $n$ calculs de flot max, donc c'est polynomial. Dans le code :
-`min_cut` (Edmonds–Karp) et `separate_fractional`.
+`flot_max` et `separation_fractionnaire`.
 
 **Cas entier (plus simple).** Si $x^*$ est entier, les arcs choisis forment un
 chemin $d \to f$ plus des circuits. On suit le chemin depuis $d$ ; chaque circuit
 $C$ non atteint donne une contrainte violée avec $S = C$ et $m \in C$ (on les
-ajoute pour tous les $m \in C$). Dans le code : `separate_integer`.
+ajoute pour tous les $m \in C$). Dans le code : `sous_tours`.
 
 ### Mise en œuvre
 
@@ -203,13 +203,13 @@ où $z^*$ est la valeur optimale et $z_{LP}$ la borne de relaxation continue.
 Sur l'instance d'exemple du sujet (`aerodrome_0.txt`, 6 aérodromes), les deux
 formulations trouvent la valeur **12** avec le parcours **1 → 3 → 2 → 5**, ce qui
 correspond à la solution donnée dans l'énoncé. Le script vérifie aussi chaque
-solution de façon indépendante (`check_solution`) : chemin de $d$ à $f$ sans
+solution de façon indépendante (fonction `afficher`) : chemin de $d$ à $f$ sans
 répétition, au moins $A_{min}$ aérodromes, chaque saut $\le R$, chaque région visitée.
 
 ## 7. Résultats (SCIP, limite de 600 s par résolution)
 
-Tableau complet généré par le script : [`resultats_SCIP.md`](resultats_SCIP.md) ; détail
-des chemins : `run_all.log`. Gap racine $= (z^* - z_{LP}) / z^*$, avec $z^*$ la meilleure
+Tableau complet : [`resultats_SCIP.md`](resultats_SCIP.md) ; détail des chemins :
+`run_all.log`. Gap racine $= (z^* - z_{LP}) / z^*$, avec $z^*$ la meilleure
 valeur connue.
 
 | Instance | $\|A\|$ | $z^*$ | MTZ $z_{LP}$ | MTZ gap % | MTZ temps (s) | MTZ nœuds | CUT $z_{LP}$ | CUT gap % | CUT temps (s) | CUT nœuds |
