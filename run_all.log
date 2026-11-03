@@ -1,0 +1,102 @@
+
+=== aerodrome_0.txt : n=6, d=1, f=5, Amin=4, K=2, R=6, |A|=18
+  [MTZ] statut=OPTIMAL  obj=12.0  borne_inf=12.0  borneLP=8.0  temps=0.0s  noeuds=1  coupes=0  valide=true
+        chemin (4 aérodromes) : 1 -> 3 -> 2 -> 5
+  [CUT] statut=OPTIMAL  obj=12.0  borne_inf=12.0  borneLP=10.0  temps=0.27s  noeuds=1  coupes=0  valide=true
+        chemin (4 aérodromes) : 1 -> 3 -> 2 -> 5
+
+=== aerodrome_20_1.txt : n=20, d=19, f=3, Amin=8, K=3, R=50, |A|=288
+  [MTZ] statut=OPTIMAL  obj=73.0  borne_inf=73.0  borneLP=65.15  temps=0.02s  noeuds=1  coupes=0  valide=true
+        chemin (8 aérodromes) : 19 -> 10 -> 14 -> 20 -> 18 -> 17 -> 7 -> 3
+  [CUT] statut=OPTIMAL  obj=73.0  borne_inf=73.0  borneLP=71.0  temps=0.05s  noeuds=1  coupes=0  valide=true
+        chemin (8 aérodromes) : 19 -> 10 -> 14 -> 20 -> 18 -> 17 -> 7 -> 3
+
+=== aerodrome_20_2.txt : n=20, d=1, f=6, Amin=8, K=3, R=50, |A|=286
+  [MTZ] statut=OPTIMAL  obj=91.0  borne_inf=91.0  borneLP=63.0  temps=0.72s  noeuds=67  coupes=0  valide=true
+        chemin (8 aérodromes) : 1 -> 5 -> 10 -> 14 -> 20 -> 17 -> 7 -> 6
+  [CUT] statut=OPTIMAL  obj=91.0  borne_inf=91.0  borneLP=74.5  temps=0.02s  noeuds=1  coupes=0  valide=true
+        chemin (8 aérodromes) : 1 -> 5 -> 10 -> 14 -> 20 -> 17 -> 7 -> 6
+
+=== aerodrome_20_3.txt : n=20, d=1, f=9, Amin=8, K=3, R=25, |A|=113
+  [MTZ] statut=OPTIMAL  obj=82.0  borne_inf=82.0  borneLP=64.0  temps=0.02s  noeuds=1  coupes=0  valide=true
+        chemin (8 aérodromes) : 1 -> 15 -> 5 -> 10 -> 14 -> 20 -> 18 -> 9
+  [CUT] statut=OPTIMAL  obj=82.0  borne_inf=82.0  borneLP=72.5  temps=0.01s  noeuds=1  coupes=0  valide=true
+        chemin (8 aérodromes) : 1 -> 15 -> 5 -> 10 -> 14 -> 20 -> 18 -> 9
+
+=== aerodrome_20_4.txt : n=20, d=1, f=2, Amin=8, K=3, R=40, |A|=226
+  [MTZ] statut=OPTIMAL  obj=96.0  borne_inf=96.0  borneLP=78.0  temps=0.05s  noeuds=10  coupes=0  valide=true
+        chemin (8 aérodromes) : 1 -> 15 -> 5 -> 10 -> 14 -> 20 -> 13 -> 2
+  [CUT] statut=OPTIMAL  obj=96.0  borne_inf=96.0  borneLP=86.5  temps=0.03s  noeuds=1  coupes=0  valide=true
+        chemin (8 aérodromes) : 1 -> 15 -> 5 -> 10 -> 14 -> 20 -> 13 -> 2
+
+=== aerodrome_30_1.txt : n=30, d=19, f=26, Amin=14, K=3, R=18, |A|=156
+  [MTZ] statut=OPTIMAL  obj=115.0  borne_inf=115.0  borneLP=84.07  temps=0.55s  noeuds=623  coupes=0  valide=true
+        chemin (14 aérodromes) : 19 -> 8 -> 10 -> 22 -> 14 -> 20 -> 18 -> 28 -> 4 -> 9 -> 27 -> 2 -> 16 -> 26
+  [CUT] statut=OPTIMAL  obj=115.0  borne_inf=115.0  borneLP=110.46  temps=0.92s  noeuds=2  coupes=2  valide=true
+        chemin (14 aérodromes) : 19 -> 8 -> 10 -> 22 -> 14 -> 20 -> 18 -> 28 -> 4 -> 9 -> 27 -> 2 -> 16 -> 26
+
+=== aerodrome_40_1.txt : n=40, d=27, f=14, Amin=14, K=2, R=26, |A|=417
+  [MTZ] statut=OPTIMAL  obj=124.0  borne_inf=124.0  borneLP=114.2  temps=0.03s  noeuds=1  coupes=0  valide=true
+        chemin (14 aérodromes) : 27 -> 7 -> 10 -> 23 -> 11 -> 8 -> 3 -> 32 -> 4 -> 9 -> 18 -> 16 -> 38 -> 14
+  [CUT] statut=OPTIMAL  obj=124.0  borne_inf=124.0  borneLP=124.0  temps=0.55s  noeuds=1  coupes=0  valide=true
+        chemin (14 aérodromes) : 27 -> 7 -> 10 -> 23 -> 11 -> 8 -> 3 -> 32 -> 4 -> 9 -> 18 -> 16 -> 38 -> 14
+
+=== aerodrome_50_1.txt : n=50, d=44, f=8, Amin=16, K=4, R=28, |A|=441
+  [MTZ] statut=OPTIMAL  obj=148.0  borne_inf=148.0  borneLP=137.04  temps=0.3s  noeuds=1  coupes=0  valide=true
+        chemin (16 aérodromes) : 44 -> 39 -> 41 -> 13 -> 1 -> 29 -> 31 -> 40 -> 11 -> 32 -> 50 -> 2 -> 47 -> 34 -> 4 -> 8
+  [CUT] statut=OPTIMAL  obj=148.0  borne_inf=148.0  borneLP=148.0  temps=1.61s  noeuds=1  coupes=0  valide=true
+        chemin (16 aérodromes) : 44 -> 39 -> 41 -> 13 -> 1 -> 29 -> 31 -> 40 -> 11 -> 32 -> 50 -> 2 -> 47 -> 34 -> 4 -> 8
+
+=== aerodrome_70_1.txt : n=70, d=68, f=69, Amin=22, K=16, R=35, |A|=757
+  [MTZ] statut=OPTIMAL  obj=288.0  borne_inf=288.0  borneLP=231.11  temps=7.65s  noeuds=1754  coupes=0  valide=true
+        chemin (22 aérodromes) : 68 -> 63 -> 15 -> 36 -> 58 -> 25 -> 11 -> 51 -> 70 -> 42 -> 5 -> 32 -> 6 -> 67 -> 27 -> 57 -> 28 -> 22 -> 14 -> 37 -> 31 -> 69
+  [CUT] statut=OPTIMAL  obj=288.0  borne_inf=288.0  borneLP=278.78  temps=10.3s  noeuds=1  coupes=0  valide=true
+        chemin (22 aérodromes) : 68 -> 63 -> 15 -> 36 -> 58 -> 25 -> 11 -> 51 -> 70 -> 42 -> 5 -> 32 -> 6 -> 67 -> 27 -> 57 -> 28 -> 22 -> 14 -> 37 -> 31 -> 69
+
+=== aerodrome_80_1.txt : n=80, d=57, f=45, Amin=35, K=9, R=31, |A|=608
+  [MTZ] statut=TIME_LIMIT  obj=385.0  borne_inf=367.82  borneLP=221.28  temps=600.0s  noeuds=491822  coupes=0  valide=true
+        chemin (35 aérodromes) : 57 -> 26 -> 41 -> 30 -> 62 -> 64 -> 58 -> 9 -> 37 -> 79 -> 22 -> 20 -> 36 -> 32 -> 60 -> 11 -> 42 -> 56 -> 24 -> 6 -> 44 -> 43 -> 61 -> 21 -> 80 -> 29 -> 13 -> 47 -> 55 -> 65 -> 35 -> 71 -> 15 -> 2 -> 45
+  [CUT] statut=OPTIMAL  obj=385.0  borne_inf=385.0  borneLP=385.0  temps=27.4s  noeuds=1  coupes=0  valide=true
+        chemin (35 aérodromes) : 57 -> 26 -> 41 -> 30 -> 62 -> 64 -> 58 -> 9 -> 37 -> 79 -> 22 -> 20 -> 36 -> 32 -> 60 -> 11 -> 42 -> 56 -> 24 -> 6 -> 43 -> 44 -> 61 -> 21 -> 29 -> 80 -> 13 -> 47 -> 55 -> 65 -> 35 -> 71 -> 15 -> 2 -> 45
+
+=== aerodrome_90_1.txt : n=90, d=82, f=25, Amin=45, K=6, R=50, |A|=1287
+  [MTZ] statut=TIME_LIMIT  obj=689.0  borne_inf=544.95  borneLP=409.84  temps=600.0s  noeuds=258278  coupes=0  valide=true
+        chemin (45 aérodromes) : 82 -> 47 -> 79 -> 28 -> 68 -> 15 -> 74 -> 36 -> 31 -> 8 -> 43 -> 26 -> 86 -> 53 -> 37 -> 83 -> 13 -> 72 -> 84 -> 56 -> 51 -> 90 -> 1 -> 32 -> 2 -> 49 -> 59 -> 61 -> 9 -> 73 -> 34 -> 45 -> 52 -> 66 -> 19 -> 78 -> 10 -> 7 -> 65 -> 20 -> 70 -> 18 -> 54 -> 23 -> 25
+  [CUT] statut=OPTIMAL  obj=605.0  borne_inf=605.0  borneLP=604.32  temps=61.99s  noeuds=2  coupes=0  valide=true
+        chemin (45 aérodromes) : 82 -> 63 -> 88 -> 62 -> 80 -> 29 -> 76 -> 39 -> 35 -> 69 -> 84 -> 85 -> 74 -> 36 -> 31 -> 43 -> 8 -> 26 -> 86 -> 83 -> 53 -> 37 -> 13 -> 72 -> 60 -> 12 -> 11 -> 56 -> 51 -> 90 -> 4 -> 1 -> 32 -> 2 -> 49 -> 34 -> 45 -> 52 -> 66 -> 19 -> 78 -> 10 -> 7 -> 75 -> 25
+
+=== aerodrome_100_1.txt : n=100, d=34, f=43, Amin=50, K=11, R=40, |A|=957
+  [MTZ] statut=TIME_LIMIT  obj=690.0  borne_inf=639.12  borneLP=429.49  temps=600.0s  noeuds=186610  coupes=0  valide=true
+        chemin (50 aérodromes) : 34 -> 51 -> 45 -> 89 -> 81 -> 20 -> 50 -> 83 -> 77 -> 78 -> 7 -> 2 -> 1 -> 88 -> 46 -> 66 -> 74 -> 17 -> 6 -> 75 -> 52 -> 12 -> 25 -> 29 -> 31 -> 80 -> 23 -> 65 -> 97 -> 15 -> 41 -> 82 -> 19 -> 91 -> 59 -> 92 -> 53 -> 64 -> 26 -> 76 -> 16 -> 36 -> 87 -> 27 -> 30 -> 94 -> 37 -> 90 -> 86 -> 43
+  [CUT] statut=OPTIMAL  obj=665.0  borne_inf=665.0  borneLP=658.69  temps=54.41s  noeuds=2  coupes=4  valide=true
+        chemin (50 aérodromes) : 34 -> 55 -> 35 -> 63 -> 32 -> 40 -> 23 -> 65 -> 48 -> 97 -> 15 -> 41 -> 82 -> 19 -> 91 -> 59 -> 70 -> 12 -> 25 -> 17 -> 74 -> 88 -> 1 -> 2 -> 84 -> 81 -> 20 -> 50 -> 83 -> 99 -> 73 -> 21 -> 58 -> 71 -> 18 -> 69 -> 61 -> 33 -> 16 -> 76 -> 26 -> 64 -> 87 -> 27 -> 30 -> 94 -> 37 -> 90 -> 86 -> 43
+
+=== aerodrome_100_2.txt : n=100, d=26, f=63, Amin=50, K=11, R=40, |A|=1205
+  [MTZ] statut=TIME_LIMIT  obj=611.0  borne_inf=559.34  borneLP=410.94  temps=600.0s  noeuds=208444  coupes=0  valide=true
+        chemin (50 aérodromes) : 26 -> 55 -> 48 -> 90 -> 98 -> 11 -> 5 -> 37 -> 12 -> 28 -> 67 -> 65 -> 61 -> 76 -> 87 -> 74 -> 30 -> 31 -> 23 -> 92 -> 29 -> 38 -> 24 -> 19 -> 34 -> 62 -> 56 -> 50 -> 75 -> 95 -> 14 -> 97 -> 69 -> 33 -> 77 -> 9 -> 6 -> 16 -> 25 -> 84 -> 64 -> 44 -> 94 -> 51 -> 3 -> 68 -> 49 -> 78 -> 86 -> 63
+  [CUT] statut=OPTIMAL  obj=580.0  borne_inf=580.0  borneLP=577.91  temps=60.95s  noeuds=2  coupes=2  valide=true
+        chemin (50 aérodromes) : 26 -> 55 -> 48 -> 90 -> 98 -> 45 -> 80 -> 42 -> 59 -> 53 -> 100 -> 18 -> 79 -> 85 -> 35 -> 66 -> 1 -> 39 -> 91 -> 43 -> 16 -> 25 -> 84 -> 64 -> 44 -> 6 -> 9 -> 77 -> 94 -> 3 -> 51 -> 95 -> 14 -> 69 -> 97 -> 38 -> 24 -> 19 -> 34 -> 62 -> 56 -> 50 -> 75 -> 54 -> 21 -> 68 -> 49 -> 78 -> 86 -> 63
+
+=== aerodrome_120_1.txt : n=120, d=1, f=105, Amin=40, K=11, R=90, |A|=5473
+  [MTZ] statut=TIME_LIMIT  obj=481.0  borne_inf=388.67  borneLP=248.55  temps=600.0s  noeuds=67337  coupes=0  valide=true
+        chemin (40 aérodromes) : 1 -> 99 -> 4 -> 79 -> 96 -> 50 -> 6 -> 9 -> 36 -> 25 -> 2 -> 116 -> 85 -> 49 -> 92 -> 98 -> 107 -> 90 -> 63 -> 100 -> 118 -> 13 -> 21 -> 46 -> 11 -> 93 -> 35 -> 66 -> 24 -> 39 -> 17 -> 119 -> 15 -> 12 -> 10 -> 82 -> 38 -> 14 -> 27 -> 105
+  [CUT] statut=TIME_LIMIT  obj=NaN  borne_inf=-1.0e20  borneLP=409.95  temps=1118.58s  noeuds=0  coupes=0  valide=false
+        chemin (0 aérodromes) : 
+
+=== aerodrome_150_1.txt : n=150, d=1, f=104, Amin=50, K=11, R=25, |A|=1098
+  [MTZ] statut=TIME_LIMIT  obj=456.0  borne_inf=437.13  borneLP=352.16  temps=600.0s  noeuds=243733  coupes=0  valide=true
+        chemin (50 aérodromes) : 1 -> 81 -> 127 -> 129 -> 70 -> 142 -> 11 -> 133 -> 116 -> 100 -> 44 -> 66 -> 132 -> 124 -> 96 -> 36 -> 91 -> 35 -> 22 -> 54 -> 46 -> 136 -> 82 -> 61 -> 30 -> 49 -> 109 -> 71 -> 113 -> 26 -> 56 -> 59 -> 12 -> 65 -> 69 -> 15 -> 73 -> 77 -> 62 -> 18 -> 67 -> 79 -> 37 -> 10 -> 92 -> 39 -> 33 -> 145 -> 110 -> 104
+  [CUT] statut=OPTIMAL  obj=448.0  borne_inf=448.0  borneLP=446.89  temps=294.23s  noeuds=1  coupes=0  valide=true
+        chemin (50 aérodromes) : 1 -> 70 -> 142 -> 11 -> 133 -> 116 -> 100 -> 44 -> 66 -> 132 -> 124 -> 96 -> 36 -> 91 -> 35 -> 40 -> 16 -> 98 -> 134 -> 22 -> 54 -> 46 -> 136 -> 82 -> 61 -> 30 -> 49 -> 109 -> 71 -> 113 -> 26 -> 56 -> 59 -> 12 -> 65 -> 15 -> 73 -> 77 -> 62 -> 18 -> 67 -> 79 -> 37 -> 10 -> 92 -> 39 -> 33 -> 145 -> 110 -> 104
+┌ Warning: aérodrome 4 : région 7 > K=6, ignorée
+└ @ Main ~/opt_projets/lecture_distances.jl:44
+┌ Warning: aérodrome 13 : région 7 > K=6, ignorée
+└ @ Main ~/opt_projets/lecture_distances.jl:44
+┌ Warning: aérodrome 38 : région 7 > K=6, ignorée
+└ @ Main ~/opt_projets/lecture_distances.jl:44
+┌ Warning: aérodrome 59 : région 7 > K=6, ignorée
+└ @ Main ~/opt_projets/lecture_distances.jl:44
+┌ Warning: aérodrome 60 : région 7 > K=6, ignorée
+└ @ Main ~/opt_projets/lecture_distances.jl:44
+
+Tableau écrit dans /Users/mohamed/opt_projets/resultats_SCIP.md

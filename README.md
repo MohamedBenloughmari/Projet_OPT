@@ -6,7 +6,8 @@ Fichiers :
 |---|---|
 | `lecture_distances.jl` | lecture d'une instance (fourni) |
 | `course_avions.jl` | les deux formulations PLNE, les bornes LP, la résolution et le tableau de résultats |
-| `resultats_SCIP.md` | tableau généré automatiquement par le script |
+| `resultats_SCIP.md`, `run_all.log` | résultats générés par le script |
+| `rapport/` | rapport LaTeX (3 pages) |
 | `instances/` | instances fournies |
 
 Lancer :
@@ -176,7 +177,9 @@ ajoute pour tous les $m \in C$). Dans le code : `separate_integer`.
   sous-tours → ajouter les coupes → recommencer jusqu'à ce qu'il n'y ait plus de
   sous-tour. La solution obtenue est alors optimale pour le modèle complet (elle est
   optimale pour un modèle relâché et réalisable pour le modèle complet). Le temps et
-  le nombre de nœuds indiqués sont la somme sur toutes les itérations.
+  le nombre de nœuds indiqués sont la somme sur toutes les itérations. Les coupes trouvées
+  à la racine (voir section 5) sont ajoutées dès le départ au PLNE, et le temps de la
+  racine est compté dans la limite de 600 s.
 
 ## 5. Borne de la relaxation continue à la racine
 
@@ -209,8 +212,41 @@ répétition, au moins $A_{min}$ aérodromes, chaque saut $\le R$, chaque régio
 
 ## 7. Résultats (SCIP, limite de 600 s par résolution)
 
-RESULTS_PLACEHOLDER
+Tableau complet généré par le script : [`resultats_SCIP.md`](resultats_SCIP.md) ; détail
+des chemins : `run_all.log`. Gap racine $= (z^* - z_{LP}) / z^*$, avec $z^*$ la meilleure
+valeur connue.
+
+| Instance | $\|A\|$ | $z^*$ | MTZ $z_{LP}$ | MTZ gap % | MTZ temps (s) | MTZ nœuds | CUT $z_{LP}$ | CUT gap % | CUT temps (s) | CUT nœuds |
+|---|---|---|---|---|---|---|---|---|---|---|
+| 0      |   18 |  12 |   8.0 | 33.3 |   0.0 |      1 |  10.0 | 16.7 |   0.3 | 1 |
+| 20_1   |  288 |  73 |  65.2 | 10.8 |   0.0 |      1 |  71.0 |  2.7 |   0.1 | 1 |
+| 20_2   |  286 |  91 |  63.0 | 30.8 |   0.7 |     67 |  74.5 | 18.1 |   0.0 | 1 |
+| 20_3   |  113 |  82 |  64.0 | 22.0 |   0.0 |      1 |  72.5 | 11.6 |   0.0 | 1 |
+| 20_4   |  226 |  96 |  78.0 | 18.8 |   0.1 |     10 |  86.5 |  9.9 |   0.0 | 1 |
+| 30_1   |  156 | 115 |  84.1 | 26.9 |   0.6 |    623 | 110.5 |  3.9 |   0.9 | 2 |
+| 40_1   |  417 | 124 | 114.2 |  7.9 |   0.0 |      1 | 124.0 |  0.0 |   0.6 | 1 |
+| 50_1   |  441 | 148 | 137.0 |  7.4 |   0.3 |      1 | 148.0 |  0.0 |   1.6 | 1 |
+| 70_1   |  757 | 288 | 231.1 | 19.8 |   7.7 |   1754 | 278.8 |  3.2 |  10.3 | 1 |
+| 80_1   |  608 | 385 | 221.3 | 42.5 | > 600 | 491822 | 385.0 |  0.0 |  27.4 | 1 |
+| 90_1   | 1287 | 605 | 409.8 | 32.3 | > 600 | 258278 | 604.3 |  0.1 |  62.0 | 2 |
+| 100_1  |  957 | 665 | 429.5 | 35.4 | > 600 | 186610 | 658.7 |  0.9 |  54.4 | 2 |
+| 100_2  | 1205 | 580 | 410.9 | 29.1 | > 600 | 208444 | 577.9 |  0.4 |  61.0 | 2 |
+| 120_1  | 5473 | 481 (non prouvé) | 248.6 | 48.3 | > 600 | 67337 | 410.0 | 14.8 | > 600 | 0 |
+| 150_1  | 1098 | 448 | 352.2 | 21.4 | > 600 | 243733 | 446.9 |  0.2 | 294.2 | 1 |
+
+Pour 120_1, on sait seulement que $z^* \in [410.0,\ 481]$.
 
 ## 8. Observations
 
-OBSERVATIONS_PLACEHOLDER
+- **Relaxation :** la borne racine de la formulation par coupes est toujours meilleure que
+  celle de MTZ (gap moyen ≈ 5,5 % contre ≈ 26 %), et inférieure à 1 % sur les grandes
+  instances résolues.
+- **Résolution :** jusqu'à 70 aérodromes, les deux formulations sont rapides. À partir de
+  80, MTZ atteint la limite de 600 s (90_1 : 689 au lieu de 605), alors que la formulation
+  par coupes prouve l'optimum en 30 s à 5 min, presque toujours à la racine (1–2 nœuds).
+- **Limite :** sur 120_1 (5473 arcs, graphe presque complet), les plans coupants de la
+  racine utilisent tout le temps disponible ; la borne obtenue (410) reste meilleure que
+  la borne finale de MTZ (388.7).
+- **Bilan :** 14 instances sur 15 résolues à l'optimum avec les coupes, contre 9 avec MTZ.
+
+Le rapport complet (3 pages) est dans [`rapport/rapport.pdf`](rapport/rapport.pdf).

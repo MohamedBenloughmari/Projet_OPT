@@ -1,4 +1,32 @@
-| Instance | Formulation | Statut | Optimum | Borne LP racine | Gap LP (%) | Temps (s) | Nœuds | Coupes lazy | Aérodromes |
-|---|---|---|---|---|---|---|---|---|---|
-| aerodrome_90_1.txt | MTZ | TIME_LIMIT | 689.0 | 409.84 | 40.5 | 600.0 | 243391 | 0 | 45 |
-| aerodrome_90_1.txt | CUT | OPTIMAL | 605.0 | 604.32 | 0.1 | 237.11 | 177 | 850 | 45 |
+| Instance | Formulation | Statut | Meilleure solution | Borne inf. finale | Borne LP racine | Gap LP (%) | Temps (s) | Nœuds | Coupes lazy | Aérodromes |
+|---|---|---|---|---|---|---|---|---|---|---|
+| aerodrome_0.txt | MTZ | OPTIMAL | 12.0 | 12.0 | 8.0 | 33.3 | 0.0 | 1 | 0 | 4 |
+| aerodrome_0.txt | CUT | OPTIMAL | 12.0 | 12.0 | 10.0 | 16.7 | 0.27 | 1 | 0 | 4 |
+| aerodrome_20_1.txt | MTZ | OPTIMAL | 73.0 | 73.0 | 65.15 | 10.8 | 0.02 | 1 | 0 | 8 |
+| aerodrome_20_1.txt | CUT | OPTIMAL | 73.0 | 73.0 | 71.0 | 2.7 | 0.05 | 1 | 0 | 8 |
+| aerodrome_20_2.txt | MTZ | OPTIMAL | 91.0 | 91.0 | 63.0 | 30.8 | 0.72 | 67 | 0 | 8 |
+| aerodrome_20_2.txt | CUT | OPTIMAL | 91.0 | 91.0 | 74.5 | 18.1 | 0.02 | 1 | 0 | 8 |
+| aerodrome_20_3.txt | MTZ | OPTIMAL | 82.0 | 82.0 | 64.0 | 22.0 | 0.02 | 1 | 0 | 8 |
+| aerodrome_20_3.txt | CUT | OPTIMAL | 82.0 | 82.0 | 72.5 | 11.6 | 0.01 | 1 | 0 | 8 |
+| aerodrome_20_4.txt | MTZ | OPTIMAL | 96.0 | 96.0 | 78.0 | 18.8 | 0.05 | 10 | 0 | 8 |
+| aerodrome_20_4.txt | CUT | OPTIMAL | 96.0 | 96.0 | 86.5 | 9.9 | 0.03 | 1 | 0 | 8 |
+| aerodrome_30_1.txt | MTZ | OPTIMAL | 115.0 | 115.0 | 84.07 | 26.9 | 0.55 | 623 | 0 | 14 |
+| aerodrome_30_1.txt | CUT | OPTIMAL | 115.0 | 115.0 | 110.46 | 3.9 | 0.92 | 2 | 2 | 14 |
+| aerodrome_40_1.txt | MTZ | OPTIMAL | 124.0 | 124.0 | 114.2 | 7.9 | 0.03 | 1 | 0 | 14 |
+| aerodrome_40_1.txt | CUT | OPTIMAL | 124.0 | 124.0 | 124.0 | 0.0 | 0.55 | 1 | 0 | 14 |
+| aerodrome_50_1.txt | MTZ | OPTIMAL | 148.0 | 148.0 | 137.04 | 7.4 | 0.3 | 1 | 0 | 16 |
+| aerodrome_50_1.txt | CUT | OPTIMAL | 148.0 | 148.0 | 148.0 | 0.0 | 1.61 | 1 | 0 | 16 |
+| aerodrome_70_1.txt | MTZ | OPTIMAL | 288.0 | 288.0 | 231.11 | 19.8 | 7.65 | 1754 | 0 | 22 |
+| aerodrome_70_1.txt | CUT | OPTIMAL | 288.0 | 288.0 | 278.78 | 3.2 | 10.3 | 1 | 0 | 22 |
+| aerodrome_80_1.txt | MTZ | TIME_LIMIT | 385.0 | 367.82 | 221.28 | 42.5 | 600.0 | 491822 | 0 | 35 |
+| aerodrome_80_1.txt | CUT | OPTIMAL | 385.0 | 385.0 | 385.0 | 0.0 | 27.4 | 1 | 0 | 35 |
+| aerodrome_90_1.txt | MTZ | TIME_LIMIT | 689.0 | 544.95 | 409.84 | 40.5 | 600.0 | 258278 | 0 | 45 |
+| aerodrome_90_1.txt | CUT | OPTIMAL | 605.0 | 605.0 | 604.32 | 0.1 | 61.99 | 2 | 0 | 45 |
+| aerodrome_100_1.txt | MTZ | TIME_LIMIT | 690.0 | 639.12 | 429.49 | 37.8 | 600.0 | 186610 | 0 | 50 |
+| aerodrome_100_1.txt | CUT | OPTIMAL | 665.0 | 665.0 | 658.69 | 0.9 | 54.41 | 2 | 4 | 50 |
+| aerodrome_100_2.txt | MTZ | TIME_LIMIT | 611.0 | 559.34 | 410.94 | 32.7 | 600.0 | 208444 | 0 | 50 |
+| aerodrome_100_2.txt | CUT | OPTIMAL | 580.0 | 580.0 | 577.91 | 0.4 | 60.95 | 2 | 2 | 50 |
+| aerodrome_120_1.txt | MTZ | TIME_LIMIT | 481.0 | 388.67 | 248.55 | 48.3 | 600.0 | 67337 | 0 | 40 |
+| aerodrome_120_1.txt | CUT | TIME_LIMIT | NaN | -1.0e20 | 409.95 | NaN | 1118.58 | 0 | 0 | 0 |
+| aerodrome_150_1.txt | MTZ | TIME_LIMIT | 456.0 | 437.13 | 352.16 | 22.8 | 600.0 | 243733 | 0 | 50 |
+| aerodrome_150_1.txt | CUT | OPTIMAL | 448.0 | 448.0 | 446.89 | 0.2 | 294.23 | 1 | 0 | 50 |

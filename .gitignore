@@ -1,2 +1,6 @@
-run_all.log
 .DS_Store
+rapport/*.aux
+rapport/*.log
+rapport/*.fls
+rapport/*.fdb_latexmk
+rapport/*.out
