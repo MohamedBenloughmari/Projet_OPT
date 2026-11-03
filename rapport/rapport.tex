@@ -27,8 +27,8 @@ $K$ régions (on note $V_k$ les aérodromes de la région $k$), d'un nombre mini
 d'aérodromes $A_{min}$ et d'un rayon d'action $R$. On cherche un chemin élémentaire de
 $d$ à $f$, de longueur totale minimale, qui visite au moins $A_{min}$ aérodromes
 (départ et arrivée compris), passe par chaque région et n'effectue que des sauts de
-longueur $d_{ij}\le R$. Comme le suggère le sujet, nous partons de la modélisation du
-problème du voyageur du commerce orienté (§3.2.3 du cours). Deux différences : on ne
+longueur $d_{ij}\le R$. Nous partons de la modélisation du problème du voyageur du
+commerce orienté, avec deux différences : on ne
 visite pas tous les sommets, et l'on cherche un chemin $d\to f$ plutôt qu'un cycle
 hamiltonien.
 
@@ -40,7 +40,7 @@ La contrainte de rayon est ainsi prise en compte directement dans le graphe, et 
 n'entre en $d$ ni ne sort de $f$. Pour $S\subseteq V$, on note
 $\delta^-(S)=\{(i,j)\in A : i\notin S,\ j\in S\}$ les arcs entrant dans $S$,
 $\delta^+(S)$ les arcs sortant de $S$, et $A(S)=\{(i,j)\in A : i\in S,\ j\in S\}$ les arcs
-internes à $S$ (l'analogue orienté de $E(S)$ dans le cours). On écrit $\delta^\pm(k)$
+internes à $S$. On écrit $\delta^\pm(k)$
 pour $\delta^\pm(\{k\})$.
 
 \section{Formulations}
@@ -54,10 +54,10 @@ directement de $i$ à $j$ ; $y_i\in\{0,1\}$ vaut 1 ssi l'aérodrome $i$ est visi
 & \textstyle\sum_{i\in V} y_i\ge A_{min} \label{c:amin}\\
 & \textstyle\sum_{i\in V_k} y_i\ge 1 \qquad \forall k\in\{1,\dots,K\} \label{c:reg}
 \end{align}
-Les contraintes \eqref{c:flot} sont celles du modèle d'affectation (§3.1.3), où le second
+Les contraintes \eqref{c:flot} sont celles du modèle d'affectation, où le second
 membre 1 est remplacé par $y_k$. Elles traduisent aussi la relation logique « on ne peut
-utiliser un arc $(i,j)$ que si $i$ est visité » ($x_{ij}\le y_i$, §3.1.2).
-La contrainte \eqref{c:reg} est une contrainte de couverture (§3.1.4) : chaque région
+utiliser un arc $(i,j)$ que si $i$ est visité » ($x_{ij}\le y_i$).
+La contrainte \eqref{c:reg} est une contrainte de couverture : chaque région
 doit être couverte au moins une fois. Comme pour le voyageur du commerce,
 \eqref{c:df}--\eqref{c:flot} n'empêchent pas les sous-tours : les arcs choisis forment
 un chemin $d\to f$ et, éventuellement, des circuits disjoints. Ces circuits permettent
@@ -65,18 +65,18 @@ de « visiter » des aérodromes à bas coût pour satisfaire \eqref{c:amin}--\e
 Les deux formulations suivantes diffèrent uniquement par la manière de les interdire.
 
 \paragraph{Formulation 1 : modèle ayant un nombre polynomial de contraintes $(P_{pol})$.}
-Comme au §3.2.3, on ajoute une variable continue $u_i\in[1,n]$, le nombre de sommets
+Comme pour le voyageur du commerce orienté, on ajoute une variable continue $u_i\in[1,n]$, le nombre de sommets
 visités depuis le départ $d$ :
 \begin{equation}
 u_d=1,\qquad u_j\ge u_i+1-n\,(1-x_{ij})\quad \forall (i,j)\in A. \label{c:pol}
 \end{equation}
 Si $x_{ij}=1$, on obtient $u_j\ge u_i+1$ ; en sommant le long d'un circuit
 $i_1\to\dots\to i_p\to i_1$, on aurait $0\ge p$, ce qui est impossible. Si $x_{ij}=0$,
-$n$ joue le rôle du majorant $M$ (§3.1.2) et la contrainte n'est pas active. Ce modèle
+$n$ joue le rôle d'un majorant $M$ et la contrainte n'est pas active. Ce modèle
 compte $|A|+2n$ variables et $O(|A|)$ contraintes.
 
 \paragraph{Formulation 2 : modèle d'élimination de sous-tours (nombre exponentiel de
-contraintes).} Comme pour l'arbre couvrant et le voyageur du commerce (§3.2.1--3.2.2), on
+contraintes).} Comme pour l'arbre couvrant et le voyageur du commerce, on
 peut exprimer la connexité de deux façons. La \emph{formulation coupe} $(P_{coupe})$
 s'écrit
 \begin{equation}
@@ -91,17 +91,16 @@ et la \emph{formulation sous-tour} $(P_{st})$ s'écrit
 \eqref{c:cut} dit que, si $m$ est visité, au moins un arc entre dans tout ensemble $S$
 contenant $m$ mais pas $d$ : $m$ est donc atteignable depuis $d$. Un sous-tour $C$ viole
 \eqref{c:cut} et \eqref{c:st} pour $S=C$. Avec $y_i=1$ pour tout $i$, \eqref{c:st}
-redonne exactement la contrainte $\sum_{A(S)}x_{ij}\le|S|-1$ du cours. Le second membre
+redonne exactement la contrainte $\sum_{A(S)}x_{ij}\le|S|-1$ du voyageur du commerce. Le second membre
 devient $\sum_S y_i-y_m$ car les sommets ne sont pas tous visités.
 
 \emph{Comparaison.} Pour $S\subseteq V\setminus\{d\}$, tout sommet $j\in S$ vérifie
 $\sum_{\delta^-(j)}x_{ij}=y_j$ d'après \eqref{c:df}--\eqref{c:flot}. En sommant sur $S$,
 on obtient $\sum_{A(S)}x_{ij}+\sum_{\delta^-(S)}x_{ij}=\sum_{j\in S}y_j$, donc
-\eqref{c:cut} $\Leftrightarrow$ \eqref{c:st}, y compris pour $(x,y)$ fractionnaire. Comme
-dans la propriété 3.2, les polyèdres associés aux relaxations continues sont égaux :
-$PV_{coupe}=PV_{st}$. Les deux formulations sont donc équivalentes (§3.7.3), et nous
-utilisons la forme coupe, plus simple à séparer. Le cours indique enfin que la
-formulation sous-tours est meilleure que la formulation polynomiale, au sens où elle
+\eqref{c:cut} $\Leftrightarrow$ \eqref{c:st}, y compris pour $(x,y)$ fractionnaire. Les polyèdres associés aux relaxations continues sont égaux :
+$PV_{coupe}=PV_{st}$. Les deux formulations sont donc équivalentes, et nous
+utilisons la forme coupe, plus simple à séparer. On s'attend enfin à ce que la
+formulation sous-tours soit meilleure que la formulation polynomiale, au sens où elle
 fournit une borne de qualité au moins aussi bonne. Nous le vérifions numériquement.
 
 \paragraph{Problème de séparation.} Le nombre de contraintes \eqref{c:cut} est de l'ordre
@@ -112,7 +111,7 @@ ou montrer qu'il n'en existe pas.
 \begin{itemize}
 \item \emph{Cas fractionnaire.} On prend $x^*$ comme capacités. Pour $m$ fixé,
 $\min_{S\ni m,\ d\notin S}\sum_{\delta^-(S)}x^*_{ij}$ est la coupe minimale $d\to m$,
-égale au flot maximal de $d$ à $m$ (modèle de flot max du §3.6, théorème flot max /
+égale au flot maximal de $d$ à $m$ (théorème flot max /
 coupe min). Pour chaque $m$ tel que $y^*_m>0$, on calcule ce flot (Edmonds--Karp). S'il
 est strictement inférieur à $y^*_m$, l'ensemble $S$ des sommets non atteignables depuis
 $d$ dans le graphe résiduel donne une contrainte violée. La séparation est donc exacte
@@ -130,7 +129,7 @@ Les modèles sont écrits en Julia avec JuMP et résolus avec SCIP, avec une lim
 $(P_{coupe})$, nous résolvons donc une suite de PLNE : on résout le modèle avec les
 contraintes \eqref{c:cut} déjà connues, on sépare les sous-tours de la solution entière,
 on ajoute les contraintes violées, puis on recommence. Chaque PLNE intermédiaire est une
-relaxation de $(P_{coupe})$, obtenue en optimisant sur un ensemble plus grand (§3.7.1).
+relaxation de $(P_{coupe})$, obtenue en optimisant sur un ensemble plus grand.
 Dès que sa solution optimale ne contient plus de sous-tour, elle est réalisable pour
 $(P_{coupe})$, donc optimale.
 
@@ -140,7 +139,7 @@ applique un algorithme de plans coupants sur le PL relâché, avec la séparatio
 fractionnaire exacte, jusqu'à ce qu'aucune contrainte ne soit violée. Les contraintes
 trouvées sont conservées dans le premier PLNE, et le temps de cette phase est compté dans
 la limite de 600\,s. Chaque solution est vérifiée indépendamment. Sur
-l'exemple du sujet (6 aérodromes), on retrouve l'optimum 12 avec le parcours
+l'instance d'exemple aerodrome\_0 (6 aérodromes), on retrouve l'optimum 12 avec le parcours
 $1\to3\to2\to5$. L'instance 90\_1 déclare $K=6$ mais attribue la région 7 à 5
 aérodromes : nous respectons $K$ et considérons ces aérodromes comme hors région.
 
@@ -183,7 +182,7 @@ optimalité non prouvée : on a seulement l'encadrement $410.0\le z^*\le 481$.}
 
 Lorsque $(P_{pol})$ atteint la limite de temps, on dispose seulement d'un encadrement
 entre la borne inférieure (duale) finale et la borne supérieure (primale) donnée par la
-meilleure solution admissible (§3.7.1). Pour (80\_1, 90\_1, 100\_1, 100\_2, 120\_1,
+meilleure solution admissible. Pour (80\_1, 90\_1, 100\_1, 100\_2, 120\_1,
 150\_1), on obtient respectivement : $[367.8 ; 385]$, $[545.0 ; 689]$, $[639.1 ; 690]$,
 $[559.3 ; 611]$, $[388.7 ; 481]$ et $[437.1 ; 456]$.
 
@@ -194,7 +193,7 @@ continue de $(P_{coupe})$ est au moins aussi bonne que celle de $(P_{pol})$, ce 
 confirme que la formulation d'élimination de sous-tours est la meilleure des deux.
 L'écart moyen passe d'environ 26\,\% à environ 5.5\,\%. Il est inférieur à 1\,\% sur
 toutes les instances résolues avec $n\ge 80$, et nul sur 40\_1, 50\_1 et 80\_1, où la
-solution optimale de la relaxation continue est déjà entière, donc optimale (§3.7.2).
+solution optimale de la relaxation continue est déjà entière, donc optimale.
 L'écart de $(P_{pol})$, au contraire, ne diminue pas quand $n$ augmente et dépasse
 30\,\% sur la plupart des grandes instances. On l'explique par le majorant $M=n$ : avec
 $x_{ij}$ fractionnaire, la contrainte $u_j\ge u_i+1-n(1-x_{ij})$ n'est quasiment jamais
